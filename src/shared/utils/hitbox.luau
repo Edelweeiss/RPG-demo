@@ -4,7 +4,7 @@ local shared = rs:WaitForChild("Shared")
 local world = require(shared.world.world)
 local components = require(shared.world.components)
 
-local function spawn(size: Vector3, cframe: CFrame, exclude: {}, visual: boolean)
+local function spawn(char: Model, size: Vector3, cframe: CFrame, exclude: {}, effects: {}, visual: boolean)
     local params = OverlapParams.new()
     params.FilterType = Enum.RaycastFilterType.Exclude
     params.FilterDescendantsInstances = exclude
@@ -32,11 +32,16 @@ local function spawn(size: Vector3, cframe: CFrame, exclude: {}, visual: boolean
 
         -- sends it off to the hit_system
         local ticket: components.HitTicket = {
+            issuer = char,
             target = eChar,
-            damage = 1
+            damage = 1,
+            effects = effects
         }
         local hitbox = world:entity()
-        world:set(hitbox, components.hitTicket, ticket)
+        world:set(hitbox, components.HitTicket, ticket)
+
+        -- cancel atk if we can
+        world:add(enemyEntt.Value, components.CancelAtk)
         break
     end
 end

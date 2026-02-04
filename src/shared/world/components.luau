@@ -6,18 +6,21 @@ local jecs = require(pkgs.jecs)
 local world = require("./world")
 
 export type HitTicket = {
+    issuer: Model,
     target: Model,
     damage: number,
+    effects: {}
 }
 
 return {
     Effects = {
-        Bleed = world:component() :: jecs.Id<number>, -- number: time on which it is to be removed!
+        Bleed = world:component() :: jecs.Id<number>, -- number: duration
         Stun = world:component() :: jecs.Id<number>,
     },
 
     Busy = world:component(), -- tag
     Combo = world:component() :: jecs.Id<number>,
+    CancelAtk = world:component(),
 
-    hitTicket = world:component() :: jecs.Id<HitTicket>
+    HitTicket = world:component() :: jecs.Id<HitTicket>
 }
