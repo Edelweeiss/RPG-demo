@@ -5,17 +5,44 @@ local shared = rs:WaitForChild("Shared")
 local world = require(shared.world.world)
 local components = require(shared.world.components)
 
+function createLimbCollidors(char: Model)
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    hum.BreakJointsOnDeath = false
+    hum.RequiresNeck = false
+
+    for _,v in char:GetChildren() do
+        if not v:IsA("BasePart") or v == hum.RootPart then return end
+        local fakeLimb = Instance.fromExisting(v)
+        fakeLimb.CanCollide = false
+        fakeLimb.CanTouch = false
+        fakeLimb.CanQuery = false
+        fakeLimb.Massless = true
+        fakeLimb.Size = Vector3.one
+        fakeLimb.Transparency = 1
+        fakeLimb.Name = "FakeLimb"
+        fakeLimb:ClearAllChildren()
+        fakeLimb.Parent = v
+
+        local weld = Instance.new("Weld")
+        weld.Part0 = v
+        weld.Part1 = fakeLimb
+        weld.Parent = fakeLimb
+    end
+end
+
 players.PlayerAdded:Connect(function(player)
     local plrEntt = world:entity(player.UserId)
 
     world:set(plrEntt, components.Circles, 0)
     world:set(plrEntt, components.Stars, 0)
 
-    player.CharacterAdded:Connect(function()
+    player.CharacterAdded:Connect(function(char)
         world:remove(plrEntt, components.Busy)
         world:set(plrEntt, components.Combo, 1)
         world:set(plrEntt, components.BlockBar, 100)
         world:set(plrEntt, components.CooldownList, {})
+
+        createLimbCollidors(char)
     end)
 end)
 
@@ -29,6 +56,8 @@ function createEnemeyEntt(enemy: Model)
 
     world:set(enemyEntt, components.Combo, 1)
     world:set(enemyEntt, components.BlockBar, 100)
+
+    createLimbCollidors(enemy)
 end
 
 for _,enemy in workspace.Enemies:GetChildren() do
