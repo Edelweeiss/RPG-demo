@@ -12,15 +12,27 @@ export type HitTicket = {
     effects: {}
 }
 
+export type KbData = {
+    vel: Vector3,
+    duration: number
+}
+
 return {
     Effects = {
         Bleed = world:component() :: jecs.Id<number>, -- number: duration
         Stun = world:component() :: jecs.Id<number>,
+        Ragdoll = world:component() :: jecs.Id<number>,
+        Knockback = world:component() :: jecs.Id<KbData>,
     },
 
     Busy = world:component(), -- tag
-    Combo = world:component() :: jecs.Id<number>,
     CancelAtk = world:component(),
+    Parry = world:component(),
+    BlockBar = world:component() :: jecs.Id<number>, -- number: (0 - 100), when 0 -> block break occurs
+    CooldownList = world:component() :: jecs.Id<{string}>,
 
+    Combo = world:component() :: jecs.Id<number>,
+    Circles = world:component() :: jecs.Id<number>, -- number: (0 - 9), for magic!
+    Stars = world:component() :: jecs.Id<number>, -- number: (0 - 9), for aura!
     HitTicket = world:component() :: jecs.Id<HitTicket>
 }

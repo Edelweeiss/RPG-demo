@@ -3,8 +3,9 @@ local rs = game:GetService("ReplicatedStorage")
 local shared = rs:WaitForChild("Shared")
 local world = require(shared.world.world)
 local components = require(shared.world.components)
+local utils = require(shared.utils.utils)
 
-local function spawn(char: Model, size: Vector3, cframe: CFrame, exclude: {}, effects: {}, visual: boolean)
+local function spawn(char: Model, size: Vector3, cframe: CFrame, damage: number, exclude: {}, effects: {}, visual: boolean)
     local params = OverlapParams.new()
     params.FilterType = Enum.RaycastFilterType.Exclude
     params.FilterDescendantsInstances = exclude
@@ -27,23 +28,26 @@ local function spawn(char: Model, size: Vector3, cframe: CFrame, exclude: {}, ef
     for _, part in recvParts do
         local eChar = part.Parent
         local eHum = eChar:FindFirstChildOfClass("Humanoid")
-        local enemyEntt = eChar:FindFirstChild("id")
+        local enemyEntt = utils.getEnttFromCharacter(eChar)
         if not eHum or not enemyEntt then continue end
 
         -- sends it off to the hit_system
         local ticket: components.HitTicket = {
             issuer = char,
             target = eChar,
-            damage = 1,
+            damage = damage,
             effects = effects
         }
         local hitbox = world:entity()
         world:set(hitbox, components.HitTicket, ticket)
 
         -- cancel atk if we can
-        world:add(enemyEntt.Value, components.CancelAtk)
-        break
+        world:add(enemyEntt, components.CancelAtk)
+
+        return eChar
     end
+
+    return nil
 end
 
 return {
