@@ -4,6 +4,7 @@ local rs = game:GetService("ReplicatedStorage")
 local shared = rs:WaitForChild("Shared")
 local world = require(shared.world.world)
 local components = require(shared.world.components)
+local weapons = require(shared.world.weapons)
 
 function createLimbCollidors(char: Model)
     local hum = char:FindFirstChildOfClass("Humanoid")
@@ -35,6 +36,8 @@ players.PlayerAdded:Connect(function(player)
 
     world:set(plrEntt, components.Circles, 0)
     world:set(plrEntt, components.Stars, 0)
+    -- ONLY READ FROM WEAPONS!!
+    world:set(plrEntt, components.EquippedWeapon, weapons.fist)
 
     player.CharacterAdded:Connect(function(char)
         world:remove(plrEntt, components.Busy)
@@ -54,6 +57,7 @@ function createEnemeyEntt(enemy: Model)
     id.Value = enemyEntt
     id.Parent = enemy
 
+    world:set(enemyEntt, components.EquippedWeapon, weapons.fist)
     world:set(enemyEntt, components.Combo, 1)
     world:set(enemyEntt, components.BlockBar, 100)
 

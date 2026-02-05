@@ -32,7 +32,7 @@ local function spawn(char: Model, size: Vector3, cframe: CFrame, damage: number,
         if not eHum or not enemyEntt then continue end
 
         -- sends it off to the hit_system
-        local ticket: components.HitTicket = {
+        local ticket: components.HitTicket_t = {
             issuer = char,
             target = eChar,
             damage = damage,

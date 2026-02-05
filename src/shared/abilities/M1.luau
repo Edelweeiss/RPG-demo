@@ -4,7 +4,7 @@ local world = require("../world/world")
 local components = require("../world/components")
 local hb = require("../utils/hitbox")
 
-local animations = rs:WaitForChild("Assets").Animations.M1
+local assets = rs:WaitForChild("Assets")
 
 --TODO: make it a prop instead of a constant!
 local MAX_COMBO = 4
@@ -14,6 +14,8 @@ function Begin(char: Model, entt)
     world:remove(entt, components.CancelAtk)
     world:add(entt, components.Busy)
 
+    local weapon = world:get(entt, components.EquippedWeapon)
+    local animations = assets.Animations[world:get(weapon, components.Name)]
     local hum = char:FindFirstChildOfClass("Humanoid")
     local rootPart = hum.RootPart
 
@@ -35,21 +37,24 @@ function Begin(char: Model, entt)
             return
         end
 
+        local damage = world:get(weapon, components.Damage)
+        local effects = world:get(weapon, components.HitEffects)
+
+        for _, effectTable in {effects.normal, effects.comboEnd, effects.critical} do
+            local knockback = effectTable[components.Effects.Knockback]
+            if knockback then
+                knockback.vel = knockback.vel.Magnitude * rootPart.CFrame.LookVector
+            end
+        end
+
         if combo >= MAX_COMBO then
             hb.spawn(
                 char,
                 Vector3.one * 5,
                 rootPart.CFrame * CFrame.new(0,0,-3.5),
-                5,
+                damage.comboEnd,
                 {char, workspace.Map},
-                {
-                    [components.Effects.Knockback] = {
-                        vel = rootPart.CFrame.LookVector * 20,
-                        duration = 0.2
-                    },
-                    [components.Effects.Ragdoll] = 0.6,
-                    [components.Effects.Stun] = 0.6,
-                },
+                effects.comboEnd,
                 true
             )
         else
@@ -57,15 +62,9 @@ function Begin(char: Model, entt)
                 char,
                 Vector3.one * 5,
                 rootPart.CFrame * CFrame.new(0,0,-3.5),
-                1,
+                damage.normal,
                 {char, workspace.Map},
-                {
-                    [components.Effects.Knockback] = {
-                        vel = rootPart.CFrame.LookVector * 5,
-                        duration = 0.05
-                    },
-                    [components.Effects.Stun] = 0.15,
-                },
+                effects.normal,
                 true
             )
         end
