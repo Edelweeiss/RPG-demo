@@ -17,18 +17,23 @@ export type KbData_t = {
     duration: number
 }
 
-export type Map<T,V> = {[T]:V}
+export type Map_t<T,V> = {[T]:V}
 
 export type HitEffects_t = {
-    normal: Map<jecs.Id<any>,any>,
-    comboEnd: Map<jecs.Id<any>,any>,
-    critical: Map<jecs.Id<any>,any>
+    normal: Map_t<jecs.Id<any>,any>,
+    comboEnd: Map_t<jecs.Id<any>,any>,
+    critical: Map_t<jecs.Id<any>,any>
 }
 
-export type Damage = {
+export type Damage_t = {
     normal: number,
     comboEnd: number,
     critical: number
+}
+
+export type MovementData_t = {
+    walkSpeed: number,
+    jumpHeight: number,
 }
 
 return {
@@ -50,9 +55,10 @@ return {
     Circles = world:component() :: jecs.Id<number>, -- number: (0 - 9), for magic!
     Stars = world:component() :: jecs.Id<number>, -- number: (0 - 9), for aura!
     HitTicket = world:component() :: jecs.Id<HitTicket_t>,
+    MovementData = world:component() :: jecs.Id<MovementData_t>,
 
     -- Weapon comps
-    Damage = world:component() :: jecs.Id<Damage>,
+    Damage = world:component() :: jecs.Id<Damage_t>,
     HitEffects = world:component() :: jecs.Id<HitEffects_t>,
     Name = world:component() :: jecs.Id<string>
 }

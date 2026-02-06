@@ -3,6 +3,7 @@ local rs = game:GetService("ReplicatedStorage")
 local world = require("../world/world")
 local components = require("../world/components")
 local hb = require("../utils/hitbox")
+local signal = require("../utils/lemon_signal")
 
 local assets = rs:WaitForChild("Assets")
 
@@ -70,6 +71,8 @@ function Begin(char: Model, entt)
         end
     end)
 
+    local endSignal = signal.new()
+
     endConn = anim:GetMarkerReachedSignal("end"):Connect(function()
         if combo >= MAX_COMBO then
             world:set(entt, components.Combo, 1)
@@ -79,6 +82,7 @@ function Begin(char: Model, entt)
         end
         world:remove(entt, components.Busy)
         world:remove(entt, components.CancelAtk)
+        endSignal:Fire()
 
         -- Rest combat if not busy for more than 1.5 seconds
         local comboReset = task.delay(1.5, function()
@@ -88,6 +92,8 @@ function Begin(char: Model, entt)
             task.cancel(comboReset)
         end)
     end)
+
+    return endSignal
 end
 
 function End(char: Model, entt)

@@ -6,11 +6,7 @@ local components = require("../world/components")
 local utils = require("../utils/utils")
 
 local animations = rs:WaitForChild("Assets").Animations.Block
-local PARRY_WINDOW = 0.3
-
--- idk man.... track.Stopped sucks
-local oldSpeed = 0
-local oldJump = 0
+local PARRY_WINDOW = 0.5
 
 function Begin(char: Model, entt)
     if world:has(entt, components.Busy) or world:has(entt, components.Effects.Stun) then return end
@@ -25,8 +21,7 @@ function Begin(char: Model, entt)
         end)
     end
 
-    oldSpeed = hum.WalkSpeed
-    oldJump = hum.JumpHeight
+    world:set(entt, components.MovementData, {walkSpeed = hum.WalkSpeed, jumpHeight = hum.JumpHeight})
     hum.WalkSpeed = 4
     hum.JumpHeight = 0
 
@@ -42,8 +37,9 @@ function End(char: Model, entt)
     if not track then return end
     track:Stop()
 
-    hum.WalkSpeed = oldSpeed
-    hum.JumpHeight = oldJump
+    local movementData = world:get(entt, components.MovementData)
+    hum.WalkSpeed = movementData.walkSpeed
+    hum.JumpHeight = movementData.jumpHeight
 
     world:remove(entt, components.Busy)
     world:remove(entt, components.Parry)

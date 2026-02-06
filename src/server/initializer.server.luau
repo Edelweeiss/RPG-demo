@@ -40,16 +40,25 @@ players.PlayerAdded:Connect(function(player)
     world:set(plrEntt, components.EquippedWeapon, weapons.fist)
 
     player.CharacterAdded:Connect(function(char)
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if not hum then hum = char:WaitForChild("Humanoid") end
+
         world:remove(plrEntt, components.Busy)
         world:set(plrEntt, components.Combo, 1)
         world:set(plrEntt, components.BlockBar, 100)
         world:set(plrEntt, components.CooldownList, {})
+        world:set(plrEntt, components.MovementData, {
+            walkSpeed = hum.WalkSpeed,
+            jumpHeight = hum.JumpHeight
+        })
 
         createLimbCollidors(char)
     end)
 end)
 
 function createEnemeyEntt(enemy: Model)
+    local hum = enemy:FindFirstChildOfClass("Humanoid")
+    if not hum then hum = enemy:WaitForChild("Humanoid") end
     local enemyEntt = world:entity()
 
     local id = Instance.new("IntValue")
@@ -60,6 +69,10 @@ function createEnemeyEntt(enemy: Model)
     world:set(enemyEntt, components.EquippedWeapon, weapons.fist)
     world:set(enemyEntt, components.Combo, 1)
     world:set(enemyEntt, components.BlockBar, 100)
+    world:set(enemyEntt, components.MovementData, {
+        walkSpeed = hum.WalkSpeed,
+        jumpHeight = hum.JumpHeight
+    })
 
     createLimbCollidors(enemy)
 end

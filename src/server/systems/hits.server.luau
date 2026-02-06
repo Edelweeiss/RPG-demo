@@ -39,6 +39,6 @@ world:added(components.HitTicket, function(entity, id, ticket)
         world:set(eEntt, effect, duration)
     end
 
-    eHum.Animator:LoadAnimation(animations.Hit[math.random(1,3)]):Play()
+    eHum.Animator:LoadAnimation(animations.Hit[math.random(1,#animations.Hit:GetChildren())]):Play()
     remotes.Vfx:FireAllClients(vfx.Hit.Hit, eHum.RootPart.CFrame, 1)
 end)
