@@ -26,11 +26,14 @@ function Begin(char: Model, entt)
 
     local hitConn = nil
     local endConn = nil
+    local endSignal = signal.new()
 
     hitConn = anim:GetMarkerReachedSignal("hit"):Connect(function()
         -- pack up gng 💔
         if world:has(entt, components.CancelAtk) then
             endConn:Disconnect()
+            endSignal:Destroy()
+            endSignal = nil
             anim:Stop()
             world:remove(entt, components.CancelAtk)
             world:remove(entt, components.Busy)
@@ -70,8 +73,6 @@ function Begin(char: Model, entt)
             )
         end
     end)
-
-    local endSignal = signal.new()
 
     endConn = anim:GetMarkerReachedSignal("end"):Connect(function()
         if combo >= MAX_COMBO then

@@ -5,6 +5,8 @@ local shared = rs:WaitForChild("Shared")
 local world = require(shared.world.world)
 local components = require(shared.world.components)
 local weapons = require(shared.world.weapons)
+local dialogue = require(shared.utils.dialogue)
+local dialogueMap = require(shared.dialougeMap)
 
 function createLimbCollidors(char: Model)
     local hum = char:FindFirstChildOfClass("Humanoid")
@@ -39,21 +41,25 @@ players.PlayerAdded:Connect(function(player)
     -- ONLY READ FROM WEAPONS!!
     world:set(plrEntt, components.EquippedWeapon, weapons.fist)
 
-    player.CharacterAdded:Connect(function(char)
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if not hum then hum = char:WaitForChild("Humanoid") end
-
-        world:remove(plrEntt, components.Busy)
-        world:set(plrEntt, components.Combo, 1)
-        world:set(plrEntt, components.BlockBar, 100)
-        world:set(plrEntt, components.CooldownList, {})
-        world:set(plrEntt, components.MovementData, {
-            walkSpeed = hum.WalkSpeed,
-            jumpHeight = hum.JumpHeight
-        })
-
-        createLimbCollidors(char)
+    dialogue.spawnDialogue({listner = player, speaker = "Test"})
+    dialogueMap.Test[2].signal:Connect(function()
+        print("FIREE!!!")
     end)
+
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then hum = char:WaitForChild("Humanoid") end
+
+    world:remove(plrEntt, components.Busy)
+    world:set(plrEntt, components.Combo, 1)
+    world:set(plrEntt, components.BlockBar, 100)
+    world:set(plrEntt, components.CooldownList, {})
+    world:set(plrEntt, components.MovementData, {
+        walkSpeed = hum.WalkSpeed,
+        jumpHeight = hum.JumpHeight
+    })
+
+    createLimbCollidors(char)
 end)
 
 function createEnemeyEntt(enemy: Model)

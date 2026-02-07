@@ -36,6 +36,11 @@ export type MovementData_t = {
     jumpHeight: number,
 }
 
+export type DialogueContext_t = {
+    listner: Player,
+    speaker: string
+}
+
 return {
     Effects = {
         Bleed = world:component() :: jecs.Id<number>, -- number: duration
@@ -60,5 +65,9 @@ return {
     -- Weapon comps
     Damage = world:component() :: jecs.Id<Damage_t>,
     HitEffects = world:component() :: jecs.Id<HitEffects_t>,
-    Name = world:component() :: jecs.Id<string>
+    Name = world:component() :: jecs.Id<string>,
+
+    -- Dialogue sys
+    DialogueContext = world:component() :: jecs.Id<DialogueContext_t>,
+    ActiveDialogue = world:component() :: jecs.Id<number>, -- number: node_id
 }
