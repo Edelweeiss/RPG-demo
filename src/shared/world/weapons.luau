@@ -27,7 +27,37 @@ world:set(fist, components.HitEffects, {
     }
 })
 world:set(fist, components.Name, "Fist")
+world:set(fist, components.MaxCombo, 4)
+
+local katana = world:entity()
+world:set(katana, components.Damage, {
+    normal = 1,
+    comboEnd = 5,
+    critical = 10
+})
+world:set(katana, components.HitEffects, {
+    normal = {
+        [components.Effects.Knockback] = {
+            vel = Vector3.one * 5,
+            duration = 0.05
+        },
+        [components.Effects.Stun] = 0.15,
+    },
+    comboEnd = {
+        [components.Effects.Knockback] = {
+            vel = Vector3.one * 20,
+            duration = 0.2
+        },
+        [components.Effects.Ragdoll] = 0.6,
+        [components.Effects.Stun] = 0.6,
+    },
+    critical = {
+    }
+})
+world:set(katana, components.Name, "Katana")
+world:set(katana, components.MaxCombo, 5)
 
 return {
-    fist = fist
+    ["Fist"] = fist,
+    ["Katana"] = katana
 }

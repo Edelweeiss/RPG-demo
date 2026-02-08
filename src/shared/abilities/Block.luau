@@ -5,14 +5,16 @@ local world = require("../world/world")
 local components = require("../world/components")
 local utils = require("../utils/utils")
 
-local animations = rs:WaitForChild("Assets").Animations.Block
+local animations = rs:WaitForChild("Assets").Animations
 local PARRY_WINDOW = 0.5
 
 function Begin(char: Model, entt)
     if world:has(entt, components.Busy) or world:has(entt, components.Effects.Stun) then return end
+    local weapon = world:get(entt, components.EquippedWeapon)
+    if not weapon then return end
 
     local hum = char:FindFirstChildOfClass("Humanoid")
-    hum.Animator:LoadAnimation(animations.Block):Play()
+    hum.Animator:LoadAnimation(animations[world:get(weapon, components.Name)].Block):Play()
 
     world:add(entt, components.Busy)
     if not world:has(components.BlockBar, jecs.OnChange) then

@@ -14,7 +14,10 @@ local function getCharacterFromEntt(entity)
     if plr then
         char = plr.Character
     else
-        for _, character in workspace.Enemies:GetChildren() do
+        local characters = {}
+        table.insert(characters, table.unpack(workspace.Enemies:GetChildren()))
+        table.insert(characters, table.unpack(workspace["NPC's"]:GetChildren()))
+        for _, character in characters do
             local _id = character:FindFirstChild("id")
             if not _id then continue end
             if _id.Value == entity then

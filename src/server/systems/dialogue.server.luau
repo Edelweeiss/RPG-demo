@@ -35,6 +35,7 @@ local function nextDialogue(data, node, entt, ctx: components.DialogueContext_t)
         if not btn:IsA("GuiButton") or btn == dialogue_frame.OptionsFrame.Temp then continue end
         btn:Destroy()
     end
+    dialogue_frame.TextFrame:ClearAllChildren()
 
     if not dialogue_frame.Visible then
         dialogue_frame.Visible = true
@@ -51,11 +52,15 @@ local function nextDialogue(data, node, entt, ctx: components.DialogueContext_t)
         dialogue_frame.TextFrame,
         node_data.text,
         {
+            Font = Font.new(
+                "rbxasset://fonts/families/SourceSansPro.json",
+                Enum.FontWeight.Bold
+            ),
             Size = text_size,
             Color = Color3.fromRGB(255,255,255),
             Transparency = 1,
             Offset = Vector2.new(0, text_size*0.25),
-            WordSorting = true
+            WordSorting = true,
         }
     )
 
@@ -78,20 +83,23 @@ local function nextDialogue(data, node, entt, ctx: components.DialogueContext_t)
 
         btn.MouseButton1Click:Connect(function()
             optionCallback(entt, option.next, dialogue_frame)
-            if option.signal then option.signal:Fire() end
-            if node_data.signal then node_data.signal:Fire() end
+            if option.signal then option.signal:Fire(ctx.listner.UserId) end
+            if node_data.signal then node_data.signal:Fire(ctx.listner.UserId) end
         end)
     end
 end
 
 world:changed(components.ActiveDialogue, function(entt, id, value)
+    local context = world:get(entt, components.DialogueContext)
+    local data = dialogueMap[context.speaker]
+
     if value == -1 then
         world:delete(entt)
+        data.EndSignal:Fire(context.listner.UserId)
         return
     end
 
-    local context = world:get(entt, components.DialogueContext)
-    nextDialogue(dialogueMap[context.speaker], value, entt, context)
+    nextDialogue(data, value, entt, context)
 end)
 
 world:added(components.DialogueContext, function(entt, id, context)

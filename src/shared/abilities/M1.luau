@@ -7,15 +7,13 @@ local signal = require("../utils/lemon_signal")
 
 local assets = rs:WaitForChild("Assets")
 
---TODO: make it a prop instead of a constant!
-local MAX_COMBO = 4
-
 function Begin(char: Model, entt)
     if world:has(entt, components.Busy) or world:has(entt, components.Effects.Stun) then return end
     world:remove(entt, components.CancelAtk)
     world:add(entt, components.Busy)
 
     local weapon = world:get(entt, components.EquippedWeapon)
+    if not weapon then return end
     local animations = assets.Animations[world:get(weapon, components.Name)]
     local hum = char:FindFirstChildOfClass("Humanoid")
     local rootPart = hum.RootPart
@@ -28,6 +26,7 @@ function Begin(char: Model, entt)
     local endConn = nil
     local endSignal = signal.new()
 
+    local max_combo = world:get(weapon, components.MaxCombo)
     hitConn = anim:GetMarkerReachedSignal("hit"):Connect(function()
         -- pack up gng 💔
         if world:has(entt, components.CancelAtk) then
@@ -51,12 +50,14 @@ function Begin(char: Model, entt)
             end
         end
 
-        if combo >= MAX_COMBO then
+        local stars = world:get(entt, components.Stars)
+        local aura_buff = (stars + 1) * (1 + ((hum.MaxHealth - hum.Health)/hum.MaxHealth)^2)
+        if combo >= max_combo then
             hb.spawn(
                 char,
                 Vector3.one * 5,
                 rootPart.CFrame * CFrame.new(0,0,-3.5),
-                damage.comboEnd,
+                damage.comboEnd * aura_buff,
                 {char, workspace.Map},
                 effects.comboEnd,
                 true
@@ -66,7 +67,7 @@ function Begin(char: Model, entt)
                 char,
                 Vector3.one * 5,
                 rootPart.CFrame * CFrame.new(0,0,-3.5),
-                damage.normal,
+                damage.normal * aura_buff,
                 {char, workspace.Map},
                 effects.normal,
                 true
@@ -75,7 +76,7 @@ function Begin(char: Model, entt)
     end)
 
     endConn = anim:GetMarkerReachedSignal("end"):Connect(function()
-        if combo >= MAX_COMBO then
+        if combo >= max_combo then
             world:set(entt, components.Combo, 1)
             task.wait(0.3)
         else

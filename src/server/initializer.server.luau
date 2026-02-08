@@ -2,11 +2,12 @@ local players = game:GetService("Players")
 local rs = game:GetService("ReplicatedStorage")
 
 local shared = rs:WaitForChild("Shared")
+local pkgs = rs:WaitForChild("pkgs")
+
 local world = require(shared.world.world)
+local jecs = require(pkgs.jecs)
 local components = require(shared.world.components)
 local weapons = require(shared.world.weapons)
-local dialogue = require(shared.utils.dialogue)
-local dialogueMap = require(shared.dialougeMap)
 
 function createLimbCollidors(char: Model)
     local hum = char:FindFirstChildOfClass("Humanoid")
@@ -38,17 +39,10 @@ players.PlayerAdded:Connect(function(player)
 
     world:set(plrEntt, components.Circles, 0)
     world:set(plrEntt, components.Stars, 0)
-    -- ONLY READ FROM WEAPONS!!
-    world:set(plrEntt, components.EquippedWeapon, weapons.fist)
-
-    dialogue.spawnDialogue({listner = player, speaker = "Test"})
-    dialogueMap.Test[2].signal:Connect(function()
-        print("FIREE!!!")
-    end)
 
     local char = player.Character or player.CharacterAdded:Wait()
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if not hum then hum = char:WaitForChild("Humanoid") end
+    local hum = char:FindFirstChildOfClass("Humanoid") or char:WaitForChild("Humanoid")
+    world:set(plrEntt, components.EquippedWeapon, weapons.Katana)
 
     world:remove(plrEntt, components.Busy)
     world:set(plrEntt, components.Combo, 1)
@@ -72,7 +66,7 @@ function createEnemeyEntt(enemy: Model)
     id.Value = enemyEntt
     id.Parent = enemy
 
-    world:set(enemyEntt, components.EquippedWeapon, weapons.fist)
+    world:set(enemyEntt, components.EquippedWeapon, weapons.Fist)
     world:set(enemyEntt, components.Combo, 1)
     world:set(enemyEntt, components.BlockBar, 100)
     world:set(enemyEntt, components.MovementData, {
@@ -81,6 +75,25 @@ function createEnemeyEntt(enemy: Model)
     })
 
     createLimbCollidors(enemy)
+end
+
+function createNPCEntt(npc: Model)
+    local hum = npc:FindFirstChildOfClass("Humanoid")
+    if not hum then hum = npc:WaitForChild("Humanoid") end
+    local npcEntt = world:entity()
+
+    local id = Instance.new("IntValue")
+    id.Name = "id"
+    id.Value = npcEntt
+    id.Parent = npc
+
+    -- Poll until the hook is set
+    while not world:has(components.NPC, jecs.OnAdd) do task.wait() end
+    world:add(npcEntt, components.NPC)
+end
+
+for _,npc in workspace["NPC's"]:GetChildren() do
+    createNPCEntt(npc)
 end
 
 for _,enemy in workspace.Enemies:GetChildren() do

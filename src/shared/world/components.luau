@@ -65,9 +65,12 @@ return {
     -- Weapon comps
     Damage = world:component() :: jecs.Id<Damage_t>,
     HitEffects = world:component() :: jecs.Id<HitEffects_t>,
+    MaxCombo = world:component() :: jecs.Id<number>,
     Name = world:component() :: jecs.Id<string>,
 
     -- Dialogue sys
     DialogueContext = world:component() :: jecs.Id<DialogueContext_t>,
     ActiveDialogue = world:component() :: jecs.Id<number>, -- number: node_id
+
+    NPC = world:component(),
 }

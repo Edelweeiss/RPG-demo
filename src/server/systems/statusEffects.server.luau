@@ -14,22 +14,26 @@ world:added(components.Effects.Stun, function(entity, id, duration)
     local char = utils.getCharacterFromEntt(entity)
     if not char then return end
     local hum = char:FindFirstChildOfClass("Humanoid")
-    local originalSpeed = hum.WalkSpeed
-    local originalJump = hum.JumpPower
 
+    world:set(entity, components.MovementData, {walkSpeed = hum.WalkSpeed, jumpHeight = hum.JumpHeight})
     hum.WalkSpeed = 0
-    hum.JumpPower = 0
-
+    hum.JumpHeight = 0
     world:add(entity, components.Busy)
     world:add(entity, components.CancelAtk)
 
-    task.delay(duration, function()
-        world:remove(entity, components.Effects.Stun)
-        world:remove(entity, components.Busy)
+    if not duration then return end
+    task.delay(duration, world.remove, world, entity, components.Effects.Stun)
+end)
 
-        hum.WalkSpeed = originalSpeed
-        hum.JumpPower = originalJump
-    end)
+world:removed(components.Effects.Stun, function(entity, id)
+    local char = utils.getCharacterFromEntt(entity)
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+
+    local movementData = world:get(entity, components.MovementData)
+    world:remove(entity, components.Busy)
+    hum.WalkSpeed = movementData.walkSpeed
+    hum.JumpHeight = movementData.jumpHeight
 end)
 
 world:added(components.Effects.Knockback, function(entity, id, data)
