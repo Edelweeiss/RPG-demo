@@ -52,8 +52,11 @@ function BlockBreak(char: Model, entt)
     world:set(entt, components.Effects.Stun, 1)
     world:set(entt, components.BlockBar, 100)
 
+    local weapon = world:get(entt, components.EquippedWeapon)
+    if not weapon then return end
+
     local hum = char:FindFirstChildOfClass("Humanoid")
-    hum.Animator:LoadAnimation(animations.Break):Play()
+    hum.Animator:LoadAnimation(animations[world:get(weapon, components.Name)].Break):Play()
 end
 
 return {

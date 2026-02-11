@@ -38,8 +38,34 @@ function findAnimationTrack(animator: Animator, name: string) : AnimationTrack?
     return nil
 end
 
+function createLimbCollidors(char: Model)
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    hum.BreakJointsOnDeath = false
+    hum.RequiresNeck = false
+
+    for _,v in char:GetChildren() do
+        if not v:IsA("BasePart") or v == hum.RootPart then return end
+        local fakeLimb = Instance.fromExisting(v)
+        fakeLimb.CanCollide = false
+        fakeLimb.CanTouch = false
+        fakeLimb.CanQuery = false
+        fakeLimb.Massless = true
+        fakeLimb.Size = Vector3.one
+        fakeLimb.Transparency = 1
+        fakeLimb.Name = "FakeLimb"
+        fakeLimb:ClearAllChildren()
+        fakeLimb.Parent = v
+
+        local weld = Instance.new("Weld")
+        weld.Part0 = v
+        weld.Part1 = fakeLimb
+        weld.Parent = fakeLimb
+    end
+end
+
 return {
     getEnttFromCharacter = getEnttFromCharacter,
     getCharacterFromEntt = getCharacterFromEntt,
-    findAnimationTrack = findAnimationTrack
+    findAnimationTrack = findAnimationTrack,
+    createLimbCollidors = createLimbCollidors
 }

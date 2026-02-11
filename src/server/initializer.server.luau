@@ -8,40 +8,12 @@ local world = require(shared.world.world)
 local jecs = require(pkgs.jecs)
 local components = require(shared.world.components)
 local weapons = require(shared.world.weapons)
+local utils = require(shared.utils.utils)
+local enemy = require(shared.utils.enemy)
 
-function createLimbCollidors(char: Model)
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    hum.BreakJointsOnDeath = false
-    hum.RequiresNeck = false
-
-    for _,v in char:GetChildren() do
-        if not v:IsA("BasePart") or v == hum.RootPart then return end
-        local fakeLimb = Instance.fromExisting(v)
-        fakeLimb.CanCollide = false
-        fakeLimb.CanTouch = false
-        fakeLimb.CanQuery = false
-        fakeLimb.Massless = true
-        fakeLimb.Size = Vector3.one
-        fakeLimb.Transparency = 1
-        fakeLimb.Name = "FakeLimb"
-        fakeLimb:ClearAllChildren()
-        fakeLimb.Parent = v
-
-        local weld = Instance.new("Weld")
-        weld.Part0 = v
-        weld.Part1 = fakeLimb
-        weld.Parent = fakeLimb
-    end
-end
-
-players.PlayerAdded:Connect(function(player)
-    local plrEntt = world:entity(player.UserId)
-
-    world:set(plrEntt, components.Circles, 0)
-    world:set(plrEntt, components.Stars, 0)
-
-    local char = player.Character or player.CharacterAdded:Wait()
+function characterSetup(char)
     local hum = char:FindFirstChildOfClass("Humanoid") or char:WaitForChild("Humanoid")
+    local plrEntt = utils.getEnttFromCharacter(char)
     world:set(plrEntt, components.EquippedWeapon, weapons.Katana)
 
     world:remove(plrEntt, components.Busy)
@@ -53,29 +25,20 @@ players.PlayerAdded:Connect(function(player)
         jumpHeight = hum.JumpHeight
     })
 
-    createLimbCollidors(char)
-end)
-
-function createEnemeyEntt(enemy: Model)
-    local hum = enemy:FindFirstChildOfClass("Humanoid")
-    if not hum then hum = enemy:WaitForChild("Humanoid") end
-    local enemyEntt = world:entity()
-
-    local id = Instance.new("IntValue")
-    id.Name = "id"
-    id.Value = enemyEntt
-    id.Parent = enemy
-
-    world:set(enemyEntt, components.EquippedWeapon, weapons.Fist)
-    world:set(enemyEntt, components.Combo, 1)
-    world:set(enemyEntt, components.BlockBar, 100)
-    world:set(enemyEntt, components.MovementData, {
-        walkSpeed = hum.WalkSpeed,
-        jumpHeight = hum.JumpHeight
-    })
-
-    createLimbCollidors(enemy)
+    utils.createLimbCollidors(char)
 end
+
+players.PlayerAdded:Connect(function(player)
+    local plrEntt = world:entity(player.UserId)
+
+    world:set(plrEntt, components.Circles, 0)
+    world:set(plrEntt, components.Stars, 0)
+
+    local char = player.Character
+    if char then characterSetup(char) end
+
+    player.CharacterAdded:Connect(characterSetup)
+end)
 
 function createNPCEntt(npc: Model)
     local hum = npc:FindFirstChildOfClass("Humanoid")
@@ -96,17 +59,15 @@ for _,npc in workspace["NPC's"]:GetChildren() do
     createNPCEntt(npc)
 end
 
-for _,enemy in workspace.Enemies:GetChildren() do
-    createEnemeyEntt(enemy)
-end
 
-workspace.Enemies.ChildAdded:Connect(function(enemy)
-    createEnemeyEntt(enemy)
-end)
-
-workspace.Enemies.ChildRemoved:Connect(function(enemy)
-    local enemyEntt = enemy:FindFirstChild("id")
-    if not enemyEntt then return end
-
-    world:delete(enemyEntt)
-end)
+-- FOR TESTING
+task.wait(2) -- naive way of waiting for state hooks to be implemented
+local enemy_entt = enemy.createEnemy(workspace.Enemies.Dummy, {
+    movementData = {walkSpeed = 16, jumpHeight = 50},
+    maxHealth = 100
+})
+world:set(enemy_entt, components.EquippedWeapon, weapons.Fist)
+world:set(enemy_entt, components.Stars, 3)
+world:set(enemy_entt, components.ChaseRadius, 30)
+world:set(enemy_entt, components.AttackRadius, 5)
+world:add(enemy_entt, components.Idle)

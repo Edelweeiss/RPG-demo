@@ -19,6 +19,7 @@ function Begin(char: Model, entt)
     local rootPart = hum.RootPart
 
     local combo = world:get(entt, components.Combo)
+    local max_combo = world:get(weapon, components.MaxCombo)
     local anim : AnimationTrack = hum.Animator:LoadAnimation(animations[combo])
     anim:Play()
 
@@ -26,17 +27,24 @@ function Begin(char: Model, entt)
     local endConn = nil
     local endSignal = signal.new()
 
-    local max_combo = world:get(weapon, components.MaxCombo)
-    hitConn = anim:GetMarkerReachedSignal("hit"):Connect(function()
-        -- pack up gng 💔
-        if world:has(entt, components.CancelAtk) then
-            endConn:Disconnect()
-            endSignal:Destroy()
+    -- pack up gng 💔
+    local function PackUp()
+        if endSignal then
+            endSignal:Fire()
             endSignal = nil
+        end
+
+        world:remove(entt, components.CancelAtk)
+        world:remove(entt, components.Busy)
+
+        if endConn then endConn:Disconnect() end
+        if hitConn then hitConn:Disconnect() end
+    end
+    anim.Stopped:Connect(PackUp)
+
+    hitConn = anim:GetMarkerReachedSignal("hit"):Connect(function()
+        if world:has(entt, components.CancelAtk) then
             anim:Stop()
-            world:remove(entt, components.CancelAtk)
-            world:remove(entt, components.Busy)
-            hitConn:Disconnect()
             return
         end
 
@@ -82,9 +90,6 @@ function Begin(char: Model, entt)
         else
             world:set(entt, components.Combo, combo+1)
         end
-        world:remove(entt, components.Busy)
-        world:remove(entt, components.CancelAtk)
-        endSignal:Fire()
 
         -- Rest combat if not busy for more than 1.5 seconds
         local comboReset = task.delay(1.5, function()
@@ -93,6 +98,8 @@ function Begin(char: Model, entt)
         world:added(components.Busy, function(e, id, value)
             task.cancel(comboReset)
         end)
+
+        PackUp()
     end)
 
     return endSignal

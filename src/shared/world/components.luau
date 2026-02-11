@@ -73,4 +73,12 @@ return {
     ActiveDialogue = world:component() :: jecs.Id<number>, -- number: node_id
 
     NPC = world:component(),
+
+    -- Enemy
+    Idle = world:component(),
+    Chase = world:component(), --> state
+    Attack = world:component(),
+    MoveToTarget = world:component() :: jecs.Id<Instance?>,
+    ChaseRadius = world:component() :: jecs.Id<number>,
+    AttackRadius = world:component() :: jecs.Id<number>,
 }
